@@ -9,3 +9,5 @@ Les contributions sont bienvenues : corrections, nouvelles plates-formes, nouvea
    la version IOS utilisées pour vos essais.
 
 Ne publiez jamais d'identifiants, de sauvegardes de configuration réelles ni d'images Cisco.
+
+La branche `main` est protégée : toute modification passe par une pull request dont les tests (CI) doivent être verts.
