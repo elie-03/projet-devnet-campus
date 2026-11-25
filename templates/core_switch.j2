@@ -1,0 +1,11 @@
+spanning-tree vlan {{ site.vlan_id }} priority 4096
+interface {{ itf.uplink }}
+ description TRUNK-VERS-ROUTEUR
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown
+interface {{ itf.downlink }}
+ description TRUNK-VERS-SW{{ site.id }}-ACC
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ no shutdown

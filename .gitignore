@@ -1,0 +1,14 @@
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets
+.env
+*.secret
+
+# Fichiers générés à l'exécution
+logs/
+backups/
+output/

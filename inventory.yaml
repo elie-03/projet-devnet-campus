@@ -1,0 +1,89 @@
+# Inventaire du lab « 3 sites + DMZ »
+# Aucun secret ici : les identifiants sont lus dans des variables d'environnement.
+
+credentials:
+  username_env: LAB_USERNAME
+  password_env: LAB_PASSWORD
+  secret_env: LAB_SECRET          # mot de passe enable (optionnel)
+
+ssh:
+  # IOS 12.4 (c3725) ne connaît que les signatures ssh-rsa (SHA-1).
+  # true = désactive rsa-sha2-256/512 côté client pour rester compatible.
+  legacy_rsa: true
+  timeout: 20
+
+# Méthode de création des VLAN sur les switchs :
+#   vlan_database -> c3725 + NM-16ESW (EtherSwitch, IOS 12.4)
+#   global        -> IOSvL2 / Catalyst (commande « vlan X » en mode config)
+switch_vlan_method: vlan_database
+
+# Correspondance rôle -> interfaces physiques (identique sur tous les sites)
+interfaces:
+  router:
+    lan: FastEthernet0/0          # vers SWx-CORE (trunk, sous-interface)
+    wan: FastEthernet0/1          # vers le backbone WAN 192.168.100.0/24
+  core_switch:
+    uplink: FastEthernet1/0       # vers le routeur du site
+    downlink: FastEthernet1/1     # vers SWx-ACC
+  access_switch:
+    uplink: FastEthernet1/0       # vers SWx-CORE
+    access_ports:
+      - FastEthernet1/1           # PC1
+      - FastEthernet1/2           # PC2
+  firewall:
+    inside: FastEthernet0/0       # backbone WAN (zone INSIDE)
+    dmz: FastEthernet0/1          # réseau DMZ
+    outside: FastEthernet1/0      # sortie Internet (nœud NAT GNS3)
+
+wan:
+  network: 192.168.100.0/24
+  ospf_process: 1
+  ospf_area: 0
+
+# Un site = un numéro. Le numéro est lu dans le hostname (R1-DKR -> site 1).
+# Ajouter un site = ajouter un bloc ici + ses IP de management dans « devices ».
+sites:
+  1:
+    name: DAKAR
+    vlan_id: 10
+    vlan_name: USERS-DKR
+    lan: 10.10.10.0/24
+    gateway: 10.10.10.1
+    wan_ip: 192.168.100.1
+  2:
+    name: ABIDJAN
+    vlan_id: 20
+    vlan_name: USERS-ABJ
+    lan: 10.20.20.0/24
+    gateway: 10.20.20.1
+    wan_ip: 192.168.100.2
+  3:
+    name: SAINT-LOUIS
+    vlan_id: 30
+    vlan_name: USERS-SL
+    lan: 10.30.30.0/24
+    gateway: 10.30.30.1
+    wan_ip: 192.168.100.3
+
+firewall:
+  wan_ip: 192.168.100.254
+  dmz_ip: 192.168.200.254
+  dmz_network: 192.168.200.0/24
+  # Réseaux internes autorisés à sortir sur Internet (NAT)
+  nat_sources:
+    - 10.0.0.0/8
+    - 192.168.200.0/24
+
+# Adresses de management (réseau hors bande 192.168.10.0/24).
+# Seule l'IP est donnée : le type d'équipement et son rôle sont découverts.
+devices:
+  - 192.168.10.1     # R1-DKR
+  - 192.168.10.2     # R2-ABJ
+  - 192.168.10.3     # R3-SL
+  - 192.168.10.4     # FW-DMZ
+  - 192.168.10.11    # SW1-CORE
+  - 192.168.10.12    # SW1-ACC
+  - 192.168.10.13    # SW2-CORE
+  - 192.168.10.14    # SW2-ACC
+  - 192.168.10.15    # SW3-CORE
+  - 192.168.10.16    # SW3-ACC

@@ -1,0 +1,57 @@
+interface {{ itf.inside }}
+ description BACKBONE-WAN
+ ip address {{ fw.wan_ip }} {{ wan.mask }}
+ ip nat inside
+ no shutdown
+interface {{ itf.dmz }}
+ description RESEAU-DMZ
+ ip address {{ fw.dmz_ip }} {{ fw.dmz_mask }}
+ ip nat inside
+ no shutdown
+interface {{ itf.outside }}
+ description SORTIE-INTERNET
+ ip address dhcp
+ ip nat outside
+ no shutdown
+ip access-list standard ACL-NAT-SOURCES
+{% for address, mask, wildcard in fw.nat %}
+ permit {{ address }} {{ wildcard }}
+{% endfor %}
+ip nat inside source list ACL-NAT-SOURCES interface {{ itf.outside }} overload
+router ospf {{ wan.ospf_process }}
+ router-id {{ fw.wan_ip }}
+ passive-interface {{ itf.dmz }}
+ network {{ wan.address }} {{ wan.wildcard }} area {{ wan.ospf_area }}
+ network {{ fw.dmz_address }} {{ fw.dmz_wildcard }} area {{ wan.ospf_area }}
+ default-information originate
+zone security INSIDE
+zone security DMZ
+zone security OUTSIDE
+class-map type inspect match-any CM-INSIDE-VERS-OUTSIDE
+ match protocol tcp
+ match protocol udp
+ match protocol icmp
+class-map type inspect match-any CM-INSIDE-VERS-DMZ
+ match protocol http
+ match protocol https
+ match protocol icmp
+policy-map type inspect PM-INSIDE-VERS-OUTSIDE
+ class type inspect CM-INSIDE-VERS-OUTSIDE
+  inspect
+ class class-default
+  drop
+policy-map type inspect PM-INSIDE-VERS-DMZ
+ class type inspect CM-INSIDE-VERS-DMZ
+  inspect
+ class class-default
+  drop
+zone-pair security ZP-INSIDE-VERS-OUTSIDE source INSIDE destination OUTSIDE
+ service-policy type inspect PM-INSIDE-VERS-OUTSIDE
+zone-pair security ZP-INSIDE-VERS-DMZ source INSIDE destination DMZ
+ service-policy type inspect PM-INSIDE-VERS-DMZ
+interface {{ itf.inside }}
+ zone-member security INSIDE
+interface {{ itf.dmz }}
+ zone-member security DMZ
+interface {{ itf.outside }}
+ zone-member security OUTSIDE

@@ -1,0 +1,17 @@
+interface {{ itf.lan }}
+ description TRUNK-VERS-SW{{ site.id }}-CORE
+ no ip address
+ no shutdown
+interface {{ itf.lan }}.{{ site.vlan_id }}
+ description PASSERELLE-VLAN{{ site.vlan_id }}-{{ site.name }}
+ encapsulation dot1Q {{ site.vlan_id }}
+ ip address {{ site.gateway }} {{ site.mask }}
+interface {{ itf.wan }}
+ description BACKBONE-WAN
+ ip address {{ site.wan_ip }} {{ wan.mask }}
+ no shutdown
+router ospf {{ wan.ospf_process }}
+ router-id {{ site.wan_ip }}
+ passive-interface {{ itf.lan }}.{{ site.vlan_id }}
+ network {{ site.address }} {{ site.wildcard }} area {{ wan.ospf_area }}
+ network {{ wan.address }} {{ wan.wildcard }} area {{ wan.ospf_area }}
