@@ -77,7 +77,7 @@ python run.py
 
 ## Auteurs
 
-- Elie MBALA LUKANDA LUIMBU
+- Elie MBALA LUKANDA LUIMBU – [LinkedIn](https://www.linkedin.com/in/elie-mbala-lukanda-luimbu-88b47a187)
 - Ngaty SARR
 
 ## Transparence
